@@ -7,42 +7,77 @@
     tools:context=".MainActivity">
 
     <ImageView
-        android:layout_marginTop="25dp"
-        android:layout_centerHorizontal="true"
-        android:background="@drawable/xposed"
+        android:id="@+id/logo1"
         android:layout_width="220dp"
-        android:layout_height="50dp"/>
+        android:layout_height="50dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="25dp"
+        android:background="@drawable/xposed" />
+
+
+    <Button
+        android:id="@+id/time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/logo1"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="同步淘宝时间(需要ROOT权限)" />
+
+    <TextView
+        android:id="@+id/tv_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/time"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="5dp"
+        android:text="同步时间"
+        android:textColor="#FF0000" />
 
     <ImageView
         android:id="@+id/bg"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/bg"
-        android:layout_centerInParent="true"
-        />
+        android:layout_below="@id/tv_time"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/bg" />
 
     <TextView
-        android:layout_below="@id/bg"
-        android:textSize="16sp"
-        android:padding="20dp"
-        android:layout_centerHorizontal="true"
-        android:text="依赖于 Xposed 开发的，淘宝秒杀插件。\n\n妈妈，再也不用担心我抢不到便宜货了！！"
-        android:textColor="#FF5A30"
+        android:id="@+id/tv_title"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_below="@id/bg"
+        android:layout_centerHorizontal="true"
+        android:padding="15dp"
+        android:text="依赖于 Xposed 开发的，淘宝秒杀插件。\n\n妈妈，再也不用担心我抢不到便宜货了！！\n\n代码已经开源,请勿用于商业!"
+        android:textColor="#FF5A30"
+        android:textSize="16sp" />
+
+
+    <TextView
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_title"
+        android:layout_centerHorizontal="true"
+        android:padding="5dp"
+        android:text="点击右下角 Icon 进入 GtiHub 查看源码 -- 来个 Star 支持作者"
+        android:textColor="#FF0000"
+        android:textSize="14sp" />
+
 
     <TextView
         android:id="@+id/liability"
-        android:text="免责声明"
-        android:textSize="16sp"
-        android:textColor="#FF0000"
-        android:drawablePadding="10dp"
-        android:drawableLeft="@drawable/mian"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
         android:layout_marginBottom="20dp"
-        />
+        android:drawableLeft="@drawable/mian"
+        android:drawablePadding="10dp"
+        android:gravity="center"
+        android:text="免责声明"
+        android:textColor="#FF0000"
+        android:textSize="16sp" />
 </RelativeLayout>

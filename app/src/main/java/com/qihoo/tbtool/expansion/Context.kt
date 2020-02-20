@@ -14,6 +14,7 @@ import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
+import android.widget.Toast
 import org.jetbrains.anko.*
 
 fun Context.dp2f(dp: Float): Float {
@@ -26,5 +27,10 @@ fun Context.dp2f(dp: Float): Float {
 // 转换Int
 fun Context.dp2i(dp: Float): Int {
     return dp2f(dp).toInt()
+}
+
+
+fun Context.showToast(msg: String) {
+    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
 }
 

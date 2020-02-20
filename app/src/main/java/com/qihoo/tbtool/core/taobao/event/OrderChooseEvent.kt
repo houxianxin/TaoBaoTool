@@ -7,7 +7,12 @@ import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.TextView
+import com.qihoo.tbtool.core.PlugInInit
 import com.qihoo.tbtool.core.taobao.Core
+import com.qihoo.tbtool.core.taobao.TbDetailActivityHook
+import com.qihoo.tbtool.dao.SelectPropertyDao
+import com.qihoo.tbtool.expansion.l
 import com.qihoo.tbtool.expansion.mainScope
 import kotlinx.coroutines.launch
 import java.util.ArrayList
@@ -18,10 +23,10 @@ object OrderChooseEvent : BaseEvent() {
         checkLoadCompleteById(dialog.context, dialog.window!!, "confirm")
 
         // 选择订单逻辑
-        // todo 这里到时候增加选择订单逻辑
         selectOrderProperty(dialog)
 
-        // 点击确定按钮
+
+//         点击确定按钮
         val resId =
             dialog.context.resources.getIdentifier("confirm", "id", dialog.context.packageName)
         val go = dialog.findViewById<View>(resId)
@@ -38,13 +43,20 @@ object OrderChooseEvent : BaseEvent() {
     }
 
 
-
     /**
      * 订单属性选择
      */
     private fun selectOrderProperty(dialog: Dialog) {
 
         try {
+            // 1 获取预选的订单Id
+            val item_id =
+                dialog.ownerActivity?.intent?.getStringExtra("item_id")
+                    ?: ""
+            // 从数据库中获取选中的属性
+            val select = PlugInInit.daoSession?.selectPropertyDao?.queryBuilder()
+                ?.where(SelectPropertyDao.Properties.ItemId.eq(item_id))?.unique()
+
             val selectLayout = dialog.context.resources.getIdentifier(
                 "sku_native_view_layout",
                 "id",
@@ -57,26 +69,32 @@ object OrderChooseEvent : BaseEvent() {
                 val views = ArrayList<View>()
 
                 val group = selectLayoutView.getChildAt(i) as ViewGroup
+
+                // 获取第一个属性昵称
+                val propertyName = (group.getChildAt(0) as TextView).text
+                val propertyValue = select?.tbProperty?.get(propertyName)
+                l("获取属性昵称:$propertyName   需要选中:$propertyValue")
+
                 // 找到所有的选择条件
                 findPropValueView(group, views)
-                // todo 遗留问题,默认订单属性选择最后一个,有没有办法预设呢?
                 if (views.size > 0) {
 
-                    for (i1 in views.indices.reversed()) {
-                        val view = views[i1]
-                        Log.d("wyz", "选择: " + view.contentDescription)
-                        // 判断能不能选
-                        if (view.contentDescription.toString().contains("不可选择")) {
-                            continue
-                        }
-
+                    // 查找选中项的条件,对应位置
+                    val condition = findIndexByText(views, propertyValue ?: "")
+                    if (condition.index != -1 && condition.isSelect) {
+                        // 选中自己的条件
+                        val view = views.get(condition.index)
                         if (!view.isSelected) {
+                            // 选中
                             view.performClick()
-                            break
+                        }
+                    } else {
+                        // 选中最后一个可选添加
+                        if (condition.lastClickView?.isSelected != true) {
+                            // 选中
+                            condition.lastClickView?.performClick()
                         }
                     }
-
-
                 }
             }
         } catch (e: Exception) {
@@ -84,6 +102,53 @@ object OrderChooseEvent : BaseEvent() {
         }
 
 
+    }
+
+    /**
+     * 根据选中的条件,查找View 返回 Condition 对象
+     * 如果没有查找到 View Condition.index=-1
+     */
+    private fun findIndexByText(views: ArrayList<View>, value: String): Condition {
+        val condition = Condition(text = value)
+
+        for (index in views.indices.reversed()) {
+            val view = views[index]
+            val valueText = view.contentDescription.toString()
+            Log.d("wyz", "选择: " + view.contentDescription)
+
+            // 判断是否是我的选中条件
+            if (valueText.contains(value)) {
+                condition.index = index
+
+                // 判断自己的属性能不能点击
+                if (valueText.contains("不可选择")) {
+                    // 不能点击,寻找最后一个可以点击的
+                    condition.isSelect = false
+                } else {
+                    // 可以点击
+                    condition.isSelect = true
+                    break
+                }
+
+            }
+
+
+            if (valueText.contains("不可选择")) {
+                continue
+            }
+
+            // 记录第一个可以选的
+            if (condition.lastClickView == null) {
+                condition.lastClickView = view
+            }
+
+            // 优化算法 自己的条件不可以选, 且已经找到了最后一个可选条件
+            if ((condition.index != -1 || value.isEmpty()) && condition.lastClickView != null) {
+                break
+            }
+        }
+
+        return condition
     }
 
     private fun findPropValueView(view: View, views: ArrayList<View>) {
@@ -102,3 +167,16 @@ object OrderChooseEvent : BaseEvent() {
 
     }
 }
+
+/**
+ * 记录条件View
+ * lastClickView 代表没有找到,默认点击最后一个
+ *
+ * isSelect 代表选项是否可以选中
+ */
+data class Condition(
+    var index: Int = -1,
+    var lastClickView: View? = null,
+    var text: String = "",
+    var isSelect: Boolean = true
+)

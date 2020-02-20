@@ -3,6 +3,7 @@ package com.mm.red.expansion
 import android.util.TypedValue
 import android.view.View
 import com.qihoo.tbtool.expansion.mainScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.actor
 
 
@@ -21,11 +22,11 @@ fun View.dp2i(dp: Float): Int {
 /**
  * 定义View 只能点一次的扩展方法
  */
-fun View.setOnceClick(block: (view: View) -> Unit) {
+fun View.setOnceClick(scope: CoroutineScope, block: (view: View) -> Unit) {
     /**
      * 定义 协程 的一费者模式
      */
-    val eventActor = mainScope.actor<View> {
+    val eventActor = scope.actor<View> {
         // 这里注意，协程 channel 若没有数据，会处于 挂起 状态。直到有数过来才会执行
         for (view in channel) {
             block(view)

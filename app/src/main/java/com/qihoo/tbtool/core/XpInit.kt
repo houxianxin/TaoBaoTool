@@ -1,5 +1,6 @@
 package com.qihoo.tbtool.core
 
+import com.qihoo.tbtool.core.taobao.MainActivityHook
 import com.qihoo.tbtool.core.taobao.OrderDialogHook
 import com.qihoo.tbtool.core.taobao.SubmitOrderAcitivityHook
 import com.qihoo.tbtool.core.taobao.TbDetailActivityHook
@@ -12,6 +13,7 @@ class XpInit : IXposedHookLoadPackage {
 
     override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
         if (lpparam.packageName == PKG && lpparam.processName == PKG) {
+            MainActivityHook.hook(lpparam)
             TbDetailActivityHook.hook(lpparam)
             OrderDialogHook.hook(lpparam)
             SubmitOrderAcitivityHook.hook(lpparam)

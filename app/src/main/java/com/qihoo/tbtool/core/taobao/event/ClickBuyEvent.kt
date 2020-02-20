@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import com.mm.red.expansion.showHintDialog
 import com.qihoo.tbtool.core.taobao.Core
+import com.qihoo.tbtool.core.taobao.TbDetailActivityHook
 import com.qihoo.tbtool.expansion.l
 import com.qihoo.tbtool.expansion.mainScope
 import kotlinx.coroutines.launch
@@ -74,7 +75,10 @@ object ClickBuyEvent : BaseEvent() {
                 buy.performClick()
             } else {
                 // 还没有开始抢购,重新检测
-                Core.startGo(activity.applicationContext, activity.intent.clone() as Intent)
+                Core.startGo(
+                    activity.applicationContext,
+                    activity.intent.clone() as Intent
+                )
                 activity.finish()
             }
         } else {

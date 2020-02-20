@@ -2,7 +2,9 @@ package com.qihoo.tbtool.core.taobao
 
 import android.app.Activity
 import android.os.Build
+import android.os.Bundle
 import android.system.Os.kill
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -30,12 +32,14 @@ object TbDetailActivityHook {
      */
     const val IS_INJECT = "IS_INJECT"
 
+
     fun hook(lpparam: XC_LoadPackage.LoadPackageParam) {
         XposedHelpers.findAndHookMethod(Activity::class.java, "onResume", object : XC_MethodHook() {
             @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
             override fun afterHookedMethod(param: MethodHookParam) {
                 super.afterHookedMethod(param)
                 val activity: Activity = param.thisObject as Activity
+//                showIntent(activity)
                 // 获取 Activity 的全路径昵称
                 val simpleName = activity.javaClass.name
                 // 判断注入了抢购悬浮窗
@@ -57,17 +61,45 @@ object TbDetailActivityHook {
                         activity.intent.putExtra(IS_INJECT, true)
                         // 注入抢购按钮
                         injectView(activity)
-                    } else if (isInject) {
-                        // 注入过 View 刷新下状态
-                        activity.window.decorView.tag?.let {
-                            val injectView = it as InjectView
-                            injectView.buidView()
-                        }
                     }
                 }
             }
         })
 
+    }
+
+
+    /**
+     * 辅助
+     */
+    private fun showIntent(activity: Activity) {
+        val intent = activity.intent
+        val bundle = intent.extras
+        val keySet = bundle!!.keySet()
+        Log.d("wyz", "========" + activity.javaClass.name + "========开始")
+        for (key in keySet) {
+            //自己的业务需要
+            if (bundle.get(key) is Bundle) {
+                val b = bundle.get(key) as Bundle?
+                val keys = b!!.keySet()
+                for (keyStr in keys) {
+                    val o = b.get(keyStr)
+                    var type = ""
+                    if (o != null) {
+                        type = o.javaClass.name
+                    }
+                    Log.d("wyz", "Activity:$key   Build:$keyStr==$o   $type")
+                }
+            } else {
+                val o = bundle.get(key)
+                var type = ""
+                if (o != null) {
+                    type = o.javaClass.name
+                }
+                Log.d("wyz", "Activity:$key   $o  $type")
+            }
+        }
+        Log.d("wyz", "========" + activity.javaClass.name + "========开始")
     }
 
     /**

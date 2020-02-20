@@ -1,6 +1,7 @@
 package com.qihoo.tbtool.core.taobao.view
 
 import android.app.Activity
+import android.content.ComponentName
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.util.Base64
@@ -9,12 +10,17 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import com.mm.red.expansion.showLoadDialog
+import com.qihoo.tbtool.api.TBRetrofit
 import com.qihoo.tbtool.core.taobao.Core
 import com.qihoo.tbtool.core.taobao.Core.statTimeGo
 import com.qihoo.tbtool.core.taobao.JobManagers
 import com.qihoo.tbtool.core.taobao.TbDetailActivityHook
 import com.qihoo.tbtool.expansion.l
+import com.qihoo.tbtool.expansion.mainScope
+import kotlinx.android.synthetic.main.content_main.view.*
 import kotlinx.coroutines.NonCancellable.start
+import kotlinx.coroutines.launch
 import org.jetbrains.anko.*
 
 val icon_start by lazy {
@@ -50,19 +56,19 @@ val icon_time by lazy {
     BitmapFactory.decodeByteArray(decode, 0, decode.size)
 }
 
+
+val icon_ju by lazy {
+    val icon =
+        "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"
+
+    val decode = Base64.decode(icon, Base64.NO_WRAP)
+    BitmapFactory.decodeByteArray(decode, 0, decode.size)
+}
+
 class InjectView(val activity: Activity) {
     var timeIcon: ImageView? = null
 
-    fun buidView() {
-        val item_id = activity.intent.getStringExtra("item_id") ?: ""
-        timeIcon?.apply {
-            imageBitmap = if (JobManagers.haveJob(item_id)) {
-                icon_stop
-            } else {
-                icon_time
-            }
-        }
-    }
+
 
     fun getRootView(): View {
         val item_id = activity.intent.getStringExtra("item_id") ?: ""
@@ -86,21 +92,11 @@ class InjectView(val activity: Activity) {
                 }
 
                 timeIcon = imageView {
-                    imageBitmap = if (JobManagers.haveJob(item_id)) {
-                        icon_stop
-                    } else {
-                        icon_time
-                    }
+                    imageBitmap = icon_time
 
                     setOnClickListener {
-                        if (JobManagers.haveJob(item_id)) {
-                            JobManagers.removeJob(item_id)
-                            imageBitmap = icon_time
-                        } else {
-                            timeGo {
-                                statTimeGo(it, activity)
-                                imageBitmap = icon_stop
-                            }
+                        timeGo { time, select ->
+                            statTimeGo(time, activity)
                         }
                     }
                 }.lparams(dip(45), dip(45)) {
@@ -119,14 +115,22 @@ class InjectView(val activity: Activity) {
     /**
      * 定时开始秒杀
      */
-    private fun timeGo(block: (ChooseTime) -> Unit) {
-        TimeChooseDialog(activity, timeConfirmListener = block).show()
+    private fun timeGo(block: (ChooseTime, HashMap<String, String>?) -> Unit) {
+        Core.selectCommodityProperty(activity) { selects ->
+            TimeChooseDialog(activity, timeConfirmListener = {
+                block(it, selects)
+            }).show()
+        }
+
     }
 
     /**
      * 开始秒杀购物
      */
     private fun startGo() {
-        Core.startGo(activity.applicationContext, activity.intent.clone() as Intent)
+        // 选择物品属性
+        Core.selectCommodityProperty(activity) {
+            Core.startGo(activity.applicationContext, activity.intent.clone() as Intent)
+        }
     }
 }
